@@ -55,7 +55,7 @@ resources:
 
 # Worker specific configurations
 worker:
-  replicaCount: 2 # Can be scaled independently
+  replicaCount: 1 # Can be scaled independently
   resources:
     requests:
       cpu: 50m
