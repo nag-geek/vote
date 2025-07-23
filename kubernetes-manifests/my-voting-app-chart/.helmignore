@@ -1,0 +1,30 @@
+# Patterns to ignore when building a Helm chart
+# This file is like .gitignore, but for Helm
+
+# exclude metadata files
+.DS_Store
+.git
+.gitignore
+.gitattributes
+.helmignore
+Chart.lock
+
+# exclude build artifacts
+*.tgz
+*.tar.gz
+*.zip
+
+# exclude local development specific files and directories that are not needed in the chart
+# (adjust these based on your project needs)
+node_modules/
+bin/
+obj/
+*.csproj
+*.sln
+*.pdb
+*.tmp
+tmp/
+.vscode/
+.idea/
+healthchecks/ # Only needed for local compose
+k8s-specifications/ # Example, if you had raw k8s YAML outside of Helm

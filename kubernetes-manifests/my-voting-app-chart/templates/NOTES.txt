@@ -1,0 +1,31 @@
+Thank you for installing {{ include "my-voting-app.name" . }}.
+
+Your application has been deployed to your Kubernetes cluster.
+
+1. Get the application URL:
+{{- if eq .Values.service.type "NodePort" }}
+  export NODE_PORT=$(kubectl get services/{{ include "my-voting-app.fullname" . }}-vote -o jsonpath="{.spec.ports[0].nodePort}")
+  export NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "Vote App URL: http://${NODE_IP}:${NODE_PORT}"
+
+  export RESULT_NODE_PORT=$(kubectl get services/{{ include "my-voting-app.fullname" . }}-result -o jsonpath="{.spec.ports[0].nodePort}")
+  echo "Result App URL: http://${NODE_IP}:${RESULT_NODE_PORT}"
+{{- else if eq .Values.service.type "LoadBalancer" }}
+  NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+  NOTE: You can watch the status of the LoadBalancer by running 'kubectl get svc -w {{ include "my-voting-app.fullname" . }}-vote'
+  export VOTE_IP=$(kubectl get services/{{ include "my-voting-app.fullname" . }}-vote -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+  export RESULT_IP=$(kubectl get services/{{ include "my-voting-app.fullname" . }}-result -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+  echo "Vote App URL: http://${VOTE_IP}:{{ .Values.service.votePort }}"
+  echo "Result App URL: http://${RESULT_IP}:{{ .Values.service.resultPort }}"
+{{- else if .Values.ingress.enabled }}
+  {{- range .Values.ingress.hosts }}
+  echo "Ingress Host: http://{{ .host }}"
+  {{- end }}
+{{- else }}
+  echo "Vote App is exposed via ClusterIP. Access it using port-forwarding for local testing:"
+  echo "kubectl port-forward svc/{{ include "my-voting-app.fullname" . }}-vote {{ .Values.service.votePort }}:80"
+  echo "kubectl port-forward svc/{{ include "my-voting-app.fullname" . }}-result {{ .Values.service.resultPort }}:80"
+{{- end }}
+
+2. To verify the deployment, run:
+   kubectl get deployments,services,pods -l "app.kubernetes.io/instance={{ .Release.Name }}"

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "my-voting-app.fullname" . }}-db
+  labels:
+    {{- include "my-voting-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: db
+spec:
+  type: ClusterIP # Only accessible within the cluster
+  ports:
+    - port: 5432
+      targetPort: postgres
+      protocol: TCP
+      name: postgres
+  selector:
+    {{- include "my-voting-app.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: db
