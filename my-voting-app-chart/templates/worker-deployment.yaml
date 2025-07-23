@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "my-voting-app.fullname" . }}-worker
+  labels:
+    {{- include "my-voting-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "my-voting-app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "my-voting-app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      containers:
+        - name: worker
+          image: "{{ include "my-voting-app.workerImage" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          livenessProbe: # Worker doesn't have an HTTP endpoint, check log for activity or simple command
+            exec:
+              command: ["echo", "worker alive"] # Simple check, customize if needed
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 30
+            failureThreshold: 3
