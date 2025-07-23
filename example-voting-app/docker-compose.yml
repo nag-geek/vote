@@ -4,50 +4,61 @@
 
 services:
   vote:
-    build: 
-      context: ./vote
-      target: dev
+    # --- CHANGED: Use the pre-built image from your Docker Hub registry ---
+    image: docker.io/nag11/example-voting-app-vote:latest # IMPORTANT: Replace 'nag11' with your Docker Hub username
+    # --- REMOVED: The 'build' block for local compilation ---
+    # build:
+    #   context: ./vote
+    #   target: dev
     depends_on:
       redis:
         condition: service_healthy
-    healthcheck: 
+    healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 15s
       timeout: 5s
       retries: 3
       start_period: 10s
-    volumes:
-     - ./vote:/usr/local/app
+    # --- REMOVED: Local volume mount for source code, as it's now part of the image ---
+    # volumes:
+    #  - ./vote:/usr/local/app
     ports:
-      - "5000:80"
+      - "5000:80" # This port is already correctly set to 5000
     networks:
       - front-tier
       - back-tier
 
   result:
-    build: ./result
-    # use nodemon rather than node for local dev
-    entrypoint: nodemon --inspect=0.0.0.0 server.js
+    # --- CHANGED: Use the pre-built image from your Docker Hub registry ---
+    image: docker.io/nag11/example-voting-app-result:latest # IMPORTANT: Replace 'nag11' with your Docker Hub username
+    # --- REMOVED: The 'build' block for local compilation ---
+    # build: ./result
+    # --- REMOVED: The 'entrypoint' override for nodemon, as the image's CMD should start the app directly ---
+    # entrypoint: nodemon --inspect=0.0.0.0 server.js
     depends_on:
       db:
-        condition: service_healthy 
-    volumes:
-      - ./result:/usr/local/app
+        condition: service_healthy
+    # --- REMOVED: Local volume mount for source code, as it's now part of the image ---
+    # volumes:
+    #   - ./result:/usr/local/app
     ports:
-      - "5001:80"
-      - "127.0.0.1:9229:9229"
+      - "5001:80" # This port is already correctly set to 5001
+      # - "127.0.0.1:9229:9229" # You can remove this debug port if not needed
     networks:
       - front-tier
       - back-tier
 
   worker:
-    build:
-      context: ./worker
+    # --- CHANGED: Use the pre-built image from your Docker Hub registry ---
+    image: docker.io/nag11/example-voting-app-worker:latest # IMPORTANT: Replace 'nag11' with your Docker Hub username
+    # --- REMOVED: The 'build' block for local compilation ---
+    # build:
+    #   context: ./worker
     depends_on:
       redis:
-        condition: service_healthy 
+        condition: service_healthy
       db:
-        condition: service_healthy 
+        condition: service_healthy
     networks:
       - back-tier
 
@@ -60,12 +71,14 @@ services:
       interval: "5s"
     networks:
       - back-tier
+    restart: always
 
   db:
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "voting"
     volumes:
       - "db-data:/var/lib/postgresql/data"
       - "./healthchecks:/healthchecks"
@@ -74,19 +87,22 @@ services:
       interval: "5s"
     networks:
       - back-tier
+    restart: always
 
-  # this service runs once to seed the database with votes
-  # it won't run unless you specify the "seed" profile
-  # docker compose --profile seed up -d
-  seed:
-    build: ./seed-data
-    profiles: ["seed"]
-    depends_on:
-      vote:
-        condition: service_healthy 
-    networks:
-      - front-tier
-    restart: "no"
+  # This service runs once to seed the database with votes
+  # It's typically enabled via a profile for specific scenarios, not always on by default.
+  # --- CHANGED: Use the pre-built image from your Docker Hub registry ---
+  # seed: # Uncomment this entire 'seed' block if you intend to run this service
+  #   image: docker.io/nag11/example-voting-app-seed-data:latest # IMPORTANT: Replace 'nag11' with your Docker Hub username
+  #   # --- REMOVED: The 'build' block ---
+  #   # build: ./seed-data
+  #   profiles: ["seed"]
+  #   depends_on:
+  #     vote:
+  #       condition: service_healthy
+  #   networks:
+  #     - front-tier
+  #   restart: "no"
 
 volumes:
   db-data:
