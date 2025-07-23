@@ -1,8 +1,8 @@
 # Default values for my-voting-app.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-# adding 1 more replica
-replicaCount: 2 # Default replica count for stateless services
+# Removing the replica 2 and making 1
+replicaCount: 1 # Default replica count for stateless services
 
 # Image configurations - IMPORTANT: Update 'nag11' to your Docker Hub username
 image:
